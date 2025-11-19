@@ -105,7 +105,7 @@ def create_model_table(modelo: str) -> bool:
         print(f"🆕 Creando tabla para modelo nuevo: {modelo}")
         
         # Ruta al script de creación
-        script_path = Path(__file__).parent.parent.parent / "create_model_table.js"
+        script_path = Path(__file__).parent / "create_model_table.js"
         
         if not script_path.exists():
             print(f"❌ Script no encontrado: {script_path}")
