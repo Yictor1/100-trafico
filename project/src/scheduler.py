@@ -2,15 +2,14 @@
 import os
 import random
 import datetime as dt
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from dotenv import load_dotenv
 load_dotenv()
 
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
+# Importar cliente de Supabase (import absoluto)
+from supabase_client import get_model_config, get_all_schedules
 
-GSHEET_NAME = os.getenv("GSHEET_NAME", "Trafico Candy")
 MIN_GAP_MINUTES = int(os.getenv("MIN_GAP_MINUTES", "10"))
 MAX_DAYS_AHEAD = int(os.getenv("MAX_DAYS_AHEAD", "30"))
 MAX_SAME_VIDEO = int(os.getenv("MAX_SAME_VIDEO", "6"))  # tope 6 apariciones
@@ -27,41 +26,34 @@ def parse_dt_local(s: str) -> dt.datetime:
 def fmt_dt_local(x: dt.datetime) -> str:
     return x.strftime("%Y-%m-%d %H:%M:%S")
 
-def gspread_client():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("credenciales.json", scope)
-    return gspread.authorize(creds)
+def _get_model_config(modelo: str):
+    """
+    Obtiene configuración del modelo desde Supabase.
+    Reemplaza _get_modelos_row() que usaba Google Sheets.
+    
+    Returns:
+        Tuple (plataformas: List[str], hora_inicio: str, ventana_horas: int)
+    """
+    config = get_model_config(modelo)
+    if not config:
+        raise ValueError(f"Modelo '{modelo}' no existe en tabla 'modelos'.")
+    
+    # Parsear plataformas (están separadas por comas)
+    plataformas = [p.strip().lower() for p in config['plataformas'].split(',') if p.strip()]
+    hora_inicio = config['hora_inicio']
+    ventana_horas = config['ventana_horas']
+    
+    return plataformas, hora_inicio, ventana_horas
 
-def _open_sheet():
-    gc = gspread_client()
-    sh = gc.open(GSHEET_NAME)
-    return sh
-
-def _get_modelos_row(sh, modelo: str):
-    ws = sh.worksheet("modelos")
-    rows = ws.get("A2:D")  # modelo | plataformas | hora_inicio | ventana_horas
-    for r in rows:
-        if not r: 
-            continue
-        name = (r[0] or "").strip().lower()
-        if name == modelo.lower():
-            plataformas = [p.strip().lower() for p in (r[1] or "").split(",") if p.strip()]
-            hora_inicio = (r[2] or "09:00").strip()
-            ventana_horas = int((r[3] or "5").strip())
-            return plataformas, hora_inicio, ventana_horas
-    raise ValueError(f"Modelo '{modelo}' no existe en hoja 'modelos'.")
-
-def _get_model_ws(sh, modelo: str):
-    try:
-        return sh.worksheet(modelo)
-    except gspread.WorksheetNotFound:
-        return sh.add_worksheet(title=modelo, rows=200, cols=10)
-
-def _get_all_records(ws):
-    try:
-        return ws.get_all_records()
-    except Exception:
-        return []
+def _get_all_records(modelo: str) -> List[Dict]:
+    """
+    Obtiene todos los registros de un modelo desde Supabase.
+    Reemplaza _get_all_records(ws) que usaba Google Sheets.
+    
+    Returns:
+        Lista de diccionarios con los schedules
+    """
+    return get_all_schedules(modelo)
 
 def _video_total_count(records, video_filename: str) -> int:
     cnt = 0
@@ -161,15 +153,15 @@ def _build_slots_for_day(n: int, start: dt.datetime, hours: int, occupied: List[
 def plan(modelo: str, video_filename: str) -> List[Tuple[str, str]]:
     """
     Devuelve lista [(plataforma, "YYYY-MM-DD HH:MM:SS")] siguiendo las reglas.
-    No escribe en Sheets; solo calcula horarios.
+    Ahora usa Supabase en lugar de Google Sheets.
     """
-    sh = _open_sheet()
-    plataformas, hora_inicio_str, ventana_horas = _get_modelos_row(sh, modelo)
+    # Obtener configuración del modelo desde Supabase
+    plataformas, hora_inicio_str, ventana_horas = _get_model_config(modelo)
     if not plataformas:
         raise ValueError("sin_plataformas")
 
-    ws_model = _get_model_ws(sh, modelo)
-    records = _get_all_records(ws_model)
+    # Obtener registros existentes desde Supabase
+    records = _get_all_records(modelo)
 
     # Tope del mismo video
     if _video_total_count(records, video_filename) >= MAX_SAME_VIDEO:

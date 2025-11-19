@@ -11,14 +11,10 @@ from dataclasses import dataclass
 
 import google.generativeai as genai
 from dotenv import load_dotenv
-import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-
 load_dotenv()
 
 # ---- ENV ----
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GSHEET_NAME = os.getenv("GSHEET_NAME", "Trafico Candy")
 MAX_RETRIES = 3
 
 # Configurar Gemini
@@ -338,66 +334,17 @@ Context:
         logger.error(f"Error generando caption y tags: {e}")
         return CaptionResult("", [], False, str(e))
 
-def get_gspread_client():
-    """Cliente para Google Sheets"""
+def persist_caption_result(form_path: str, caption: str, tags: List[str]) -> bool:
+    """Actualiza el archivo del formulario con caption y tags."""
     try:
-        scope = ["https://spreadsheets.google.com/feeds",
-                 "https://www.googleapis.com/auth/drive"]
-        
-        # Buscar credenciales desde el directorio raíz del proyecto
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        creds_path = os.path.join(base_dir, "credenciales.json")
-        
-        creds = ServiceAccountCredentials.from_json_keyfile_name(creds_path, scope)
-        return gspread.authorize(creds)
-    except Exception as e:
-        logger.error(f"Error creando cliente gspread: {e}")
-        return None
-
-def update_sheets_with_caption_tags(modelo: str, video_filename: str, caption: str, tags: List[str]) -> bool:
-    """Actualiza Google Sheets con el caption y tags generados"""
-    try:
-        gc = get_gspread_client()
-        if not gc:
-            return False
-            
-        sh = gc.open(GSHEET_NAME)
-        
-        try:
-            ws = sh.worksheet(modelo)
-        except gspread.WorksheetNotFound:
-            logger.error(f"Hoja '{modelo}' no encontrada en {GSHEET_NAME}")
-            return False
-        
-        # Obtener todos los registros
-        records = ws.get_all_records()
-        
-        # Buscar las filas que corresponden a este video
-        tags_str = ", ".join(tags) if tags else ""
-        updated_rows = 0
-        
-        for i, record in enumerate(records):
-            if record.get("video", "").strip() == video_filename:
-                row_num = i + 2  # +2 porque los registros empiezan en fila 2 (fila 1 son headers)
-                
-                # Actualizar caption y tags
-                try:
-                    ws.update_cell(row_num, 2, caption)  # Columna B: caption
-                    ws.update_cell(row_num, 3, tags_str)  # Columna C: tags
-                    updated_rows += 1
-                    logger.info(f"Actualizada fila {row_num} para video {video_filename}")
-                except Exception as e:
-                    logger.error(f"Error actualizando fila {row_num}: {e}")
-        
-        if updated_rows > 0:
-            logger.info(f"Actualizadas {updated_rows} filas en Sheets para {video_filename}")
-            return True
-        else:
-            logger.warning(f"No se encontraron filas para actualizar con video {video_filename}")
-            return False
-            
-    except Exception as e:
-        logger.error(f"Error actualizando Sheets: {e}")
+        data = load_form_data(form_path)
+        data["caption"] = caption
+        data["tags"] = tags
+        with open(form_path, "w", encoding="utf-8") as handler:
+            json.dump(data, handler, ensure_ascii=False, indent=2)
+        return True
+    except Exception as err:
+        logger.error(f"Error guardando caption/tags en {form_path}: {err}")
         return False
 
 def generate_and_update(modelo: str, form_path: str):
@@ -425,14 +372,53 @@ def generate_and_update(modelo: str, form_path: str):
         logger.info(f"   📝 Caption: {result.caption}")
         logger.info(f"   🏷️  Tags ({len(result.tags)}): {', '.join(result.tags)}")
         
-        # Actualizar Google Sheets
-        success = update_sheets_with_caption_tags(modelo, video_filename, result.caption, result.tags)
-        
+        # Guardar en JSON local (backup)
+        success = persist_caption_result(form_path, result.caption, result.tags)
         if success:
-            logger.info(f"✅ Caption y tags actualizados exitosamente en Sheets para {video_filename}")
-            logger.info(f"   🎯 Sistema inteligente aplicó {len(result.tags)} tags optimizados")
+            logger.info("✅ Caption y tags guardados en el formulario.")
         else:
-            logger.error(f"❌ Error actualizando Sheets para {video_filename}")
+            logger.warning("⚠️ No se pudieron persistir caption/tags (revisa logs).")
+        
+        # Insertar en Supabase
+        try:
+            from supabase_client import get_model_config, insert_schedule, ensure_model_exists
+            
+            # Asegurar que el modelo existe en Supabase
+            ensure_model_exists(modelo)
+            
+            # Obtener plataformas del modelo
+            config = get_model_config(modelo)
+            if not config:
+                logger.warning(f"⚠️ No se encontró configuración para {modelo} en Supabase")
+                return
+            
+            # Parsear plataformas (están separadas por comas)
+            plataformas = [p.strip() for p in config['plataformas'].split(',')]
+            logger.info(f"📊 Plataformas para {modelo}: {plataformas}")
+            
+            # Convertir tags de lista a string separado por comas
+            tags_str = ','.join(result.tags)
+            
+            # Insertar un schedule por cada plataforma
+            for plataforma in plataformas:
+                inserted = insert_schedule(
+                    modelo=modelo,
+                    video=video_filename,
+                    caption=result.caption,
+                    tags=tags_str,
+                    plataforma=plataforma,
+                    estado='pendiente',
+                    scheduled_time=''  # Se llenará después por scheduler
+                )
+                if inserted:
+                    logger.info(f"✅ Schedule insertado en Supabase: {modelo} -> {plataforma}")
+                else:
+                    logger.error(f"❌ Error insertando schedule: {modelo} -> {plataforma}")
+                    
+        except ImportError:
+            logger.warning("⚠️ supabase_client no disponible, saltando inserción en Supabase")
+        except Exception as e:
+            logger.error(f"❌ Error insertando en Supabase: {e}")
             
     except Exception as e:
         logger.error(f"❌ Error en generate_and_update: {e}")
