@@ -1,0 +1,101 @@
+{
+  "cookies": [
+    {
+      "name": "XSRF-TOKEN",
+      "value": "eyJpdiI6Ijc1OThFQWx3enlubUpXYlR1NDQ2cGc9PSIsInZhbHVlIjoiRjVxZDVOaFpmZEpuVlFxVEhLUWtiYUpDODg3QVhIUGVNSEdaUks5VGo2YWN6ZitlbDR2d3U3V2JlNXZMUWxKSnE0TTZvV3lXTEV6VC9rOEl6aVE3S0pXNmQ4K1MzTkNPZG1KMTJVdlZ3NDhnR2hnR3FzU2lTQmNBSXZxVjllVHEiLCJtYWMiOiI4YmU3ODcxNmFjMDRiOWY1OTgxNGNmNGVkZDBjM2I0ODY5MzViZmU2MWNiNjI3NWZkMjRkMjY0YTY0YjAzNmQ0IiwidGFnIjoiIn0%3D",
+      "domain": "kams.com",
+      "path": "/",
+      "expires": 1763696806.200881,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "kamscom_session",
+      "value": "eyJpdiI6Imd4RHF6akpqN3h5YVR5d2FDTDljK0E9PSIsInZhbHVlIjoiTVhrM2ErcEVjajNFeTNaTTlNaGJFSUFyVExPUFdJK0UzVEZld1RQZ080RE8rOThXVFBJYWUwRjM4bGtGRnFvRzFYNkVxUklIcHBOaDNRdForR1E1NWR4S3E3Yk1PdlVpV3JXb3F6L3h6NW1QcXBrSno5Ui92WGg1Nm1oUjFBT3QiLCJtYWMiOiI2MTE4MGE5NDk3ZTE2NDIxNDZjMWViY2M0Mzg0MWNkNGY2YmNkZTYzM2Q2NWM4MGE3NDNiMGVlZmVhZWMxZWY4IiwidGFnIjoiIn0%3D",
+      "domain": "kams.com",
+      "path": "/",
+      "expires": 1763696806.200995,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga",
+      "value": "GA1.1.384707520.1763689607",
+      "domain": ".kams.com",
+      "path": "/",
+      "expires": 1798249607.143644,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "d_fs",
+      "value": "1",
+      "domain": ".kams.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "d_uid",
+      "value": "9c4660db-50bc-a03b-0a82-810e85ed9532",
+      "domain": ".kams.com",
+      "path": "/",
+      "expires": 1766281610,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "d_uidb",
+      "value": "9c4660db-50bc-a03b-0a82-810e85ed9532",
+      "domain": ".kams.com",
+      "path": "/",
+      "expires": 1766281610,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga_FW132RK4QP",
+      "value": "GS2.1.s1763689607$o1$g0$t1763689614$j53$l0$h0",
+      "domain": ".kams.com",
+      "path": "/",
+      "expires": 1798249614.655839,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://kams.com",
+      "localStorage": [
+        {
+          "name": "accessToken",
+          "value": "20436|huGKiqWDH8RwakgtSss2wNZESmPokd5Q7JCjNQa570d33f29"
+        },
+        {
+          "name": "lscache-is",
+          "value": "\"eyJ1aWQiOiI5YzQ2NjBkYi01MGJjLWEwM2ItMGE4Mi04MTBlODVlZDk1MzIiLCJoYXNQZXJzaXN0ZW50IjpmYWxzZSwicHJvZHVjdElkIjozNDc2MSwicHJvZHVjdElkVHlwZSI6bnVsbCwiaGlzdG9yeSI6eyJkbXB1aWQiOlsiOWM0NjYwZGItNTBiYy1hMDNiLTBhODItODEwZTg1ZWQ5NTMyIl0sImpzZnAiOlsiNzFhOTc2OGQ1MmRhZmM0YzliYWUwOGZlY2E4ZDlkYmIiXX0sImdsb2JhbCI6e30sImhhc2ZwIjp0cnVlfQ==\""
+        },
+        {
+          "name": "guestId",
+          "value": "435cccfb-6fc5-4db9-8f91-c46e1fb2cd00"
+        },
+        {
+          "name": "userId",
+          "value": "9640"
+        },
+        {
+          "name": "userType",
+          "value": "model"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+MODEL_NAME=yic npx playwright test workers/login_kams.js
