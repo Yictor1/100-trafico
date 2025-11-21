@@ -1,81 +1,51 @@
 # 🚦 Trafico Bot
 
-Bot de Telegram automatizado para la gestión, optimización y programación de contenido para adultos. Integra Inteligencia Artificial (Gemini) y base de datos en la nube (Supabase) para un flujo de trabajo eficiente.
+**Automated Telegram bot for adult content management**
 
-## 🚀 Características Principales
+## ✨ Features
+- 🤖 Central Telegram bot for video uploads and metadata handling
+- 🧠 Gemini AI for automatic caption and SEO‑optimized tag generation
+- ☁️ Supabase cloud database for robust storage and scheduling
+- 📅 Smart scheduler that auto‑assigns posting times per model and platform
+- 🔄 Multi‑platform support (XXXFollow, MyClub, RedGifs, Cams, …)
 
-*   **🤖 Bot de Telegram Centralizado**: Interfaz principal para subir videos y gestionar metadatos.
-*   **🧠 IA Generativa (Gemini)**: Generación automática de captions seductores y tags inteligentes optimizados para SEO.
-*   **☁️ Base de Datos Supabase**: Almacenamiento robusto y escalable de configuraciones y programación de posts.
-*   **📅 Scheduler Inteligente**: Asignación automática de horarios de publicación según las reglas de cada modelo y plataforma.
-*   **🔄 Gestión Multi-Plataforma**: Soporte para múltiples plataformas (ej. XXXFollow, MyClub, RedGifs, Cams) con configuraciones independientes.
+## 🏗️ Architecture
+- `src/project/bot_central.py` – Core Telegram bot logic
+- `src/project/caption.py` – Gemini integration and caption/tag generation
+- `src/project/scheduler.py` – Publication time calculation
+- `src/project/supabase_client.py` – Database abstraction layer
+- `create_model_table.js` – Utility script to initialise model tables in Supabase
 
-## 🛠️ Arquitectura del Proyecto
+## 📋 Prerequisites
+- Python 3.10+
+- Node.js (for Supabase maintenance scripts)
+- Supabase account & project
+- Google Gemini API key
 
-El proyecto se estructura en los siguientes componentes clave:
+## ⚙️ Setup
+1. Create a `.env` file in the project root:
+   ```env
+   TELEGRAM_TOKEN=your_telegram_token
+   GEMINI_API_KEY=your_gemini_key
+   SUPABASE_URL=your_supabase_url
+   SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+2. Install Python dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-*   **`project/src/bot_central.py`**: El núcleo del bot de Telegram. Maneja la interacción con el usuario y la recepción de archivos.
-*   **`project/src/caption.py`**: Módulo de IA. Analiza metadatos, conecta con Gemini API para generar textos y guarda resultados en Supabase.
-*   **`project/src/scheduler.py`**: Motor de programación. Calcula los mejores horarios de publicación basándose en la configuración del modelo.
-*   **`project/src/supabase_client.py`**: Cliente centralizado para todas las operaciones de base de datos.
-*   **`create_model_table.js`**: Script de utilidad para inicializar tablas de bases de datos para nuevos modelos.
-
-## 📋 Requisitos Previos
-
-*   Python 3.10+
-*   Node.js (para scripts de mantenimiento de Supabase)
-*   Cuenta en Supabase
-*   API Key de Google Gemini
-
-## ⚙️ Configuración
-
-1.  **Variables de Entorno**: Crea un archivo `.env` en la carpeta `Trafico/` con las siguientes variables:
-    ```env
-    TELEGRAM_TOKEN=tu_token_de_telegram
-    GEMINI_API_KEY=tu_api_key_de_gemini
-    SUPABASE_URL=tu_url_de_supabase
-    SUPABASE_ANON_KEY=tu_anon_key_de_supabase
-    ```
-
-2.  **Instalación de Dependencias**:
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-## ▶️ Uso
-
-### 1. Iniciar el Bot
-Para arrancar el bot, ejecuta el script principal desde la raíz del proyecto:
-
+## ▶️ Usage
 ```bash
-python Trafico/project/run.py
+python src/project/run.py
 ```
+The bot will prompt for video details (what you sell, outfit, etc.), generate captions/tags via Gemini, store entries in Supabase, and schedule posts automatically.
 
-### 2. Flujo de Trabajo
-1.  Envía un video al bot de Telegram.
-2.  El bot te pedirá detalles: **¿Qué vendes?** (foco del video) y **Outfit**.
-3.  El sistema procesará el video:
-    *   Generará un caption y tags con IA.
-    *   Creará entradas en la base de datos para cada plataforma configurada.
-    *   Asignará horarios de publicación automáticamente.
-
-### 3. Agregar un Nuevo Modelo
-Cuando trabajes con una modelo nueva por primera vez:
-
-1.  El bot creará automáticamente la carpeta y la configuración básica en Supabase.
-2.  Debes crear su tabla de horarios ejecutando manualmente:
-    ```bash
-    cd Trafico/project/src
-    node create_model_table.js nombre_modelo
-    ```
-    *(Reemplaza `nombre_modelo` con el slug de la modelo, ej: `taniared`)*
-
-## 📂 Estructura de Directorios
-
-*   `modelos/`: Carpetas específicas por modelo con sus configuraciones (`config.json`).
-*   `plataformas/`: Scripts específicos de subida para cada plataforma (si aplica).
-*   `project/`: Código fuente Python.
-*   `create_supabase_schema.js`: Script para inicializar el esquema base de la base de datos.
+## 📂 Directory layout
+- `modelos/` – Model‑specific folders with `config.json`
+- `plataformas/` – Platform‑specific upload scripts
+- `src/project/` – Python source code
+- `node_modules/` – Node dependencies for Supabase scripts
 
 ---
-*Desarrollado para optimizar el flujo de trabajo de Traffic Management.*
+*Optimized for efficient traffic management and content publishing.*
